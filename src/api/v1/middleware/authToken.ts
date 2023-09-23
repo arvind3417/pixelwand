@@ -24,7 +24,6 @@ export const authenticateToken = async (
       return _res.status(404).json({ error: 'Session token has expired' });
     }
     const decoded = jwtUtils.verifyAccessToken(token);
-    console.log(decoded);
     
     (<any>_req).user = decoded;
     (<any>_req).access_token = token;

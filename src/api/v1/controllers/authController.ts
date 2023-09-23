@@ -76,7 +76,6 @@ export const registerController = asyncWrapper(
         return _next(new CustomErrors.BadRequestError("User already exists"));
       else {
         try {
-        console.log("hi");
         const hashedPassword = hashPassword(_req.body.password);
         
         user = await User.create(normalizeModel({ ..._req.body, password: hashedPassword },register_FIELDS));
@@ -100,7 +99,6 @@ export const registerController = asyncWrapper(
 );
 export const logoutController = asyncWrapper(
   async (_req: Request, _res: Response, _next: NextFunction) => {
-    console.log("hiiiidhhsi");
     
     const { token } = _req.headers;
     if (!token)
@@ -112,7 +110,6 @@ export const logoutController = asyncWrapper(
         return _next(new CustomErrors.BadRequestError("Session not found"));
       else {
         try {
-        console.log("hi");
         // await session.deleteOne(); 
       } catch (err: any) {
         return _next(
