@@ -4,6 +4,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { httpResponse } from "./api/v1/helpers";
+import { authRouter } from "./api/v1/routes/authRoutes";
+import { protectedRouter } from "./api/v1/routes/protectedRoutes";
+
 import { routeNotFound } from "./api/v1/middleware/routeNotFound";
 import { errorHandler } from "./api/v1/middleware/errorHandler";
 
@@ -11,21 +14,40 @@ import { PORT, BASEURL } from "./config/constants";
 
 
 import { connectDB } from "./config/db";
-
-
+import fs from 'fs';
+import path from 'path';
 // Use express app 
 const app = express();
 
-// Middleware
+
+// Define the custom token for logging user ID
+
+// Create the Morgan middleware with the custom format and stream
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-
 // Routes
 
+app.use(`${BASEURL}/auth`, authRouter); 
+app.use(`${BASEURL}/protected`, protectedRouter); 
+
+// swaggerDocs(app)
 
 
-app.use("/ok", (_req, res) =>
+/**
+ * @swagger
+ * /ok:
+ *   get:
+ *     tags:
+ *       - Healthcheck
+ *     summary: Health Check
+ *     description: Responds if the app is up and running
+ *     responses:
+ *       200:
+ *         description: App is up and running
+ */
+app.get("/ok", (_req, res) =>
   res.status(200).send(httpResponse(true, "OK", {}))
 );
 
@@ -33,18 +55,5 @@ app.use("/ok", (_req, res) =>
 app.use(routeNotFound);
 app.use(errorHandler);
 
-const port = process.env.PORT || PORT;
+export default app;
 
-try {
-  // connect to database
-  if (!process.env.CONNECTIONSTR)
-    throw new Error("No connection string found in .env file");
-  connectDB(process.env.CONNECTIONSTR);
-
-  // Server setup
-  app.listen(port, () => {
-    console.log(`Server listening on: http://localhost:${port}/`);
-  });
-} catch (error) {
-  console.error(error);
-}

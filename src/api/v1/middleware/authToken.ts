@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { jwtUtils } from "../helpers";
 
 import * as CustomError from "../errors";
-import { log } from "console";
+import { Session } from "../models/session";
 
 export const authenticateToken = async (
   _req: Request,
@@ -10,12 +10,19 @@ export const authenticateToken = async (
   _next: NextFunction
 ) => {
   const authHeader = _req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  const token:string|undefined = authHeader && authHeader.split(" ")[1];
 
   if (token == null)
     return _next(new CustomError.ForbiddenError("No token provided"));
 
   try {
+    const session = await Session.findOne({ token });
+    if (!session) {
+      return _res.status(401).json({ message: 'Authentication failed' });
+    }
+    if (session.expiresAt < new Date()) {
+      return _res.status(404).json({ error: 'Session token has expired' });
+    }
     const decoded = jwtUtils.verifyAccessToken(token);
     console.log(decoded);
     
